@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perbandingan Jenis Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Perbandingan Pemesanan City Hotel vs Resort Hotel</h1>
+        
+        <div class="visualization">
+            <div class="chart-container" id="hotel-comparison-chart"></div>
+            
+            <div class="insight-box">
+                <h3>Insight</h3>
+                <ul>
+                    <li>City Hotel jauh lebih banyak dipesan dibandingkan Resort Hotel, dengan sekitar 60% dari total pemesanan.</li>
+                    <li>Resort Hotel hanya menyumbang sekitar 40% dari total pemesanan.</li>
+                    <li>Rasio pemesanan City Hotel dibandingkan Resort Hotel adalah sekitar 1.5 : 1.</li>
+                    <li>Dominasi City Hotel menunjukkan preferensi tamu terhadap lokasi di pusat kota dibandingkan dengan lokasi resort.</li>
+                    <li>Pola ini konsisten di semua bulan seperti yang ditunjukkan pada visualisasi sebelumnya.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="nav-container">
+            <a href="monthly_trends.html"><button class="nav-button">Lihat Tren Bulanan</button></a>
+            <a href="market_segment.html"><button class="nav-button">Lihat Segmen Pasar</button></a>
+        </div>
+    </div>
+
+    <footer>
+        <p>Visualisasi Data Hotel Booking Demand &copy; 2023</p>
+    </footer>
+
+    <script src="js/hotel_comparison.js"></script>
+</body>
+</html>

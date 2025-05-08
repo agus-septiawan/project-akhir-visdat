@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Data Hotel Booking Demand</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .card {
+            width: 30%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .card-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .card-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .intro {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                width: 48%;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visualisasi Data Hotel Booking Demand</h1>
+        
+        <div class="intro">
+            <h2>Tentang Dataset</h2>
+            <p>Dataset ini berisi informasi pemesanan hotel dari dua jenis hotel: City Hotel dan Resort Hotel. Data mencakup berbagai atribut seperti waktu pemesanan, lama menginap, jumlah tamu, dan segmen pasar. Visualisasi ini bertujuan untuk mengeksplorasi pola pemesanan hotel dan memberikan wawasan tentang preferensi pelanggan.</p>
+            
+            <h3>Pertanyaan yang Dijawab:</h3>
+            <ul>
+                <li>Bagaimana tren jumlah pemesanan hotel setiap bulan?</li>
+                <li>Tipe hotel mana yang lebih banyak dipesan: City Hotel atau Resort Hotel?</li>
+                <li>Dari segmen pasar mana kebanyakan tamu melakukan pemesanan?</li>
+            </ul>
+        </div>
+        
+        <div class="card-container">
+            <div class="card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="card-content">
+                    <h3>Tren Pemesanan Hotel Setiap Bulan</h3>
+                    <p>Visualisasi ini menunjukkan pola musiman dalam pemesanan hotel dan perbedaan antara City Hotel dan Resort Hotel sepanjang tahun.</p>
+                    <a href="monthly_trends.html" class="card-button">Lihat Visualisasi</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="card-content">
+                    <h3>Perbandingan Jenis Hotel</h3>
+                    <p>Visualisasi ini membandingkan jumlah pemesanan antara City Hotel dan Resort Hotel, baik dalam bentuk persentase maupun jumlah absolut.</p>
+                    <a href="hotel_comparison.html" class="card-button">Lihat Visualisasi</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="card-content">
+                    <h3>Segmen Pasar Pemesanan Hotel</h3>
+                    <p>Visualisasi ini menunjukkan distribusi pemesanan berdasarkan segmen pasar dan bagaimana setiap segmen terdistribusi antara City Hotel dan Resort Hotel.</p>
+                    <a href="market_segment.html" class="card-button">Lihat Visualisasi</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Visualisasi Data Hotel Booking Demand &copy; 2023</p>
+    </footer>
+</body>
+</html>

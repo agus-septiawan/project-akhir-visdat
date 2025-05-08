@@ -1,0 +1,99 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+.visualization-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.tooltip {
+    position: absolute;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 5px;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-size: 12px;
+}
+
+.legend {
+    font-size: 12px;
+}
+
+.btn-back {
+    margin-bottom: 20px;
+}
+
+.insight-box {
+    background-color: #e9f7fe;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+.insight-box h4 {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.insight-box ul {
+    padding-left: 20px;
+}
+
+.insight-box li {
+    margin-bottom: 5px;
+}
+
+/* Custom colors for charts */
+.city-hotel-color {
+    fill: #4e79a7;
+}
+
+.resort-hotel-color {
+    fill: #f28e2c;
+}
+
+.total-line-color {
+    stroke: #59a14f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .visualization-container {
+        padding: 10px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+}
