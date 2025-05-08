@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tren Pemesanan Hotel Setiap Bulan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Tren Pemesanan Hotel Setiap Bulan</h1>
+        
+        <div class="visualization">
+            <div class="chart-container" id="monthly-trends-chart"></div>
+            
+            <div class="insight-box">
+                <h3>Insight</h3>
+                <ul>
+                    <li>Bulan dengan jumlah pemesanan tertinggi adalah Agustus, menunjukkan puncak musim liburan di Eropa.</li>
+                    <li>Bulan dengan jumlah pemesanan terendah adalah Januari, yang merupakan periode setelah liburan akhir tahun.</li>
+                    <li>Terdapat pola musiman yang jelas, dengan puncak pemesanan pada bulan Juli-Agustus (musim panas di Eropa).</li>
+                    <li>City Hotel secara konsisten memiliki jumlah pemesanan lebih tinggi dibandingkan Resort Hotel di semua bulan.</li>
+                    <li>Perbedaan jumlah pemesanan antara bulan tertinggi dan terendah sangat signifikan, menunjukkan pentingnya strategi harga musiman.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="nav-container">
+            <a href="index.html"><button class="nav-button">Kembali ke Beranda</button></a>
+            <a href="hotel_comparison.html"><button class="nav-button">Lihat Perbandingan Jenis Hotel</button></a>
+        </div>
+    </div>
+
+    <footer>
+        <p>Visualisasi Data Hotel Booking Demand &copy; 2023</p>
+    </footer>
+
+    <script src="js/monthly_trends.js"></script>
+</body>
+</html>

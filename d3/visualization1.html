@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tren Pemesanan Hotel Setiap Bulan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <a href="index.html" class="btn btn-primary btn-back">&larr; Kembali ke Beranda</a>
+        
+        <header class="text-center mb-5">
+            <h1>Tren Pemesanan Hotel Setiap Bulan</h1>
+            <p class="lead">Analisis pola musiman dalam pemesanan hotel</p>
+        </header>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Visualisasi</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="visualization" class="visualization-container"></div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showCityHotel" checked>
+                                    <label class="form-check-label" for="showCityHotel">City Hotel</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showResortHotel" checked>
+                                    <label class="form-check-label" for="showResortHotel">Resort Hotel</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showTotalLine" checked>
+                                    <label class="form-check-label" for="showTotalLine">Total Pemesanan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="highlightPeaks" checked>
+                                    <label class="form-check-label" for="highlightPeaks">Sorot Puncak & Lembah</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Insight</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-box">
+                            <h4>Temuan Utama</h4>
+                            <ul id="insights">
+                                <!-- Insights will be populated by JavaScript -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Penjelasan</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Visualisasi ini menunjukkan tren pemesanan hotel setiap bulan, dengan membandingkan jumlah pemesanan untuk City Hotel dan Resort Hotel. Pola musiman dapat terlihat jelas, dengan puncak pemesanan pada bulan-bulan tertentu.</p>
+                        <p>Beberapa poin penting yang dapat diamati:</p>
+                        <ul>
+                            <li>Puncak pemesanan terjadi pada bulan-bulan musim panas di Eropa (Juli-Agustus)</li>
+                            <li>Pemesanan terendah terjadi pada bulan-bulan musim dingin (Januari)</li>
+                            <li>City Hotel secara konsisten memiliki jumlah pemesanan lebih tinggi dibandingkan Resort Hotel</li>
+                            <li>Pola musiman ini konsisten untuk kedua jenis hotel</li>
+                        </ul>
+                        <p>Informasi ini dapat digunakan untuk strategi pemasaran dan manajemen kapasitas hotel sepanjang tahun.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>Analisis Data Pemesanan Hotel &copy; 2023</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load data directly from CSV
+        d3.csv('data/hotel_bookings_processed.csv').then(rawData => {
+            // Process the data to get monthly bookings by hotel type
+            const monthlyData = d3.rollup(
+                rawData,
+                v => v.length,
+                d => d.arrival_month,
+                d => d.hotel
+            );
+            
+            // Convert to array format for easier manipulation
+            const data = Array.from(monthlyData, ([month, hotels]) => {
+                const cityHotel = hotels.get('City Hotel') || 0;
+                const resortHotel = hotels.get('Resort Hotel') || 0;
+                return {
+                    arrival_month: month,
+                    'City Hotel': cityHotel,
+                    'Resort Hotel': resortHotel,
+                    'Total': cityHotel + resortHotel
+                };
+            });
+            
+            // Define month order
+            const monthOrder = [
+                'January', 'February', 'March', 'April', 'May', 'June', 
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            
+            // Sort data by month order
+            data.sort((a, b) => {
+                return monthOrder.indexOf(a.arrival_month) - monthOrder.indexOf(b.arrival_month);
+            });
+            
+            // Set up dimensions and margins
+            const margin = {top: 50, right: 100, bottom: 70, left: 80};
+            const width = 1000 - margin.left - margin.right;
+            const height = 500 - margin.top - margin.bottom;
+            
+            // Create SVG
+            const svg = d3.select('#visualization')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Set up scales
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.arrival_month))
+                .range([0, width])
+                .padding(0.2);
+            
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => Math.max(d.Total, d['City Hotel'], d['Resort Hotel'])) * 1.1])
+                .range([height, 0]);
+            
+            // Create axes
+            const xAxis = svg.append('g')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .style('text-anchor', 'end')
+                .attr('dx', '-.8em')
+                .attr('dy', '.15em')
+                .attr('transform', 'rotate(-30)');
+            
+            const yAxis = svg.append('g')
+                .call(d3.axisLeft(y).tickFormat(d => d3.format(',')(d)));
+            
+            // Add Y axis label
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -60)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .text('Jumlah Pemesanan');
+            
+            // Add X axis label
+            svg.append('text')
+                .attr('y', height + 60)
+                .attr('x', width / 2)
+                .attr('text-anchor', 'middle')
+                .text('Bulan');
+            
+            // Create tooltip
+            const tooltip = d3.select('body').append('div')
+                .attr('class', 'tooltip')
+                .style('opacity', 0);
+            
+            // Find max and min months
+            const maxMonth = data.reduce((max, d) => d.Total > data[max].Total ? data.indexOf(d) : max, 0);
+            const minMonth = data.reduce((min, d) => d.Total < data[min].Total ? data.indexOf(d) : min, 0);
+            
+            // Create highlight rectangles for max and min months
+            const highlightGroup = svg.append('g')
+                .attr('class', 'highlights');
+            
+            const maxHighlight = highlightGroup.append('rect')
+                .attr('class', 'max-highlight')
+                .attr('x', x(data[maxMonth].arrival_month) - x.bandwidth() * 0.1)
+                .attr('width', x.bandwidth() * 1.2)
+                .attr('y', 0)
+                .attr('height', height)
+                .attr('fill', 'rgba(0, 255, 0, 0.1)')
+                .attr('stroke', 'rgba(0, 200, 0, 0.5)')
+                .attr('stroke-width', 1)
+                .style('display', 'block');
+            
+            const minHighlight = highlightGroup.append('rect')
+                .attr('class', 'min-highlight')
+                .attr('x', x(data[minMonth].arrival_month) - x.bandwidth() * 0.1)
+                .attr('width', x.bandwidth() * 1.2)
+                .attr('y', 0)
+                .attr('height', height)
+                .attr('fill', 'rgba(255, 0, 0, 0.1)')
+                .attr('stroke', 'rgba(200, 0, 0, 0.5)')
+                .attr('stroke-width', 1)
+                .style('display', 'block');
+            
+            // Create bars for City Hotel
+            const cityBars = svg.selectAll('.city-bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'city-bar')
+                .attr('x', d => x(d.arrival_month))
+                .attr('width', x.bandwidth() / 2)
+                .attr('y', d => y(d['City Hotel']))
+                .attr('height', d => height - y(d['City Hotel']))
+                .attr('fill', '#4e79a7')
+                .on('mouseover', function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style('opacity', .9);
+                    tooltip.html(`<strong>City Hotel:</strong> ${d3.format(',')(d['City Hotel'])} pemesanan`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+            
+            // Create bars for Resort Hotel
+            const resortBars = svg.selectAll('.resort-bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'resort-bar')
+                .attr('x', d => x(d.arrival_month) + x.bandwidth() / 2)
+                .attr('width', x.bandwidth() / 2)
+                .attr('y', d => y(d['Resort Hotel']))
+                .attr('height', d => height - y(d['Resort Hotel']))
+                .attr('fill', '#f28e2c')
+                .on('mouseover', function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style('opacity', .9);
+                    tooltip.html(`<strong>Resort Hotel:</strong> ${d3.format(',')(d['Resort Hotel'])} pemesanan`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+            
+            // Create line for total bookings
+            const line = d3.line()
+                .x(d => x(d.arrival_month) + x.bandwidth() / 2)
+                .y(d => y(d.Total));
+            
+            const totalLine = svg.append('path')
+                .datum(data)
+                .attr('class', 'total-line')
+                .attr('fill', 'none')
+                .attr('stroke', '#59a14f')
+                .attr('stroke-width', 3)
+                .attr('d', line);
+            
+            // Add circles for each data point on the line
+            const circles = svg.selectAll('.total-circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('class', 'total-circle')
+                .attr('cx', d => x(d.arrival_month) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.Total))
+                .attr('r', 5)
+                .attr('fill', '#59a14f')
+                .on('mouseover', function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style('opacity', .9);
+                    tooltip.html(`<strong>Total:</strong> ${d3.format(',')(d.Total)} pemesanan<br>
+                                 <strong>Bulan:</strong> ${d.arrival_month}`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+            
+            // Add value labels to the total line
+            const labels = svg.selectAll('.total-label')
+                .data(data)
+                .enter()
+                .append('text')
+                .attr('class', 'total-label')
+                .attr('x', d => x(d.arrival_month) + x.bandwidth() / 2)
+                .attr('y', d => y(d.Total) - 10)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '10px')
+                .text(d => d3.format(',')(d.Total));
+            
+            // Add legend
+            const legend = svg.append('g')
+                .attr('class', 'legend')
+                .attr('transform', `translate(${width - 200}, -40)`);
+            
+            // City Hotel legend
+            legend.append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', 20)
+                .attr('height', 20)
+                .attr('fill', '#4e79a7');
+            
+            legend.append('text')
+                .attr('x', 30)
+                .attr('y', 15)
+                .text('City Hotel');
+            
+            // Resort Hotel legend
+            legend.append('rect')
+                .attr('x', 0)
+                .attr('y', 30)
+                .attr('width', 20)
+                .attr('height', 20)
+                .attr('fill', '#f28e2c');
+            
+            legend.append('text')
+                .attr('x', 30)
+                .attr('y', 45)
+                .text('Resort Hotel');
+            
+            // Total line legend
+            legend.append('line')
+                .attr('x1', 0)
+                .attr('y1', 70)
+                .attr('x2', 20)
+                .attr('y2', 70)
+                .attr('stroke', '#59a14f')
+                .attr('stroke-width', 3);
+            
+            legend.append('text')
+                .attr('x', 30)
+                .attr('y', 75)
+                .text('Total Pemesanan');
+            
+            // Add insights
+            const insights = [
+                `Bulan dengan jumlah pemesanan tertinggi adalah ${data[maxMonth].arrival_month} dengan ${d3.format(',')(data[maxMonth].Total)} pemesanan.`,
+                `Bulan dengan jumlah pemesanan terendah adalah ${data[minMonth].arrival_month} dengan ${d3.format(',')(data[minMonth].Total)} pemesanan.`,
+                `Terdapat pola musiman yang jelas, dengan puncak pemesanan pada bulan Juli-Agustus (musim panas di Eropa).`,
+                `City Hotel secara konsisten memiliki jumlah pemesanan lebih tinggi dibandingkan Resort Hotel di semua bulan.`,
+                `Perbedaan jumlah pemesanan antara bulan tertinggi dan terendah adalah ${d3.format(',')(data[maxMonth].Total - data[minMonth].Total)} pemesanan (${((data[maxMonth].Total / data[minMonth].Total - 1) * 100).toFixed(1)}% lebih tinggi).`,
+                `Rasio pemesanan tertinggi:terendah adalah ${(data[maxMonth].Total / data[minMonth].Total).toFixed(1)}:1.`,
+                `Tren pemesanan menunjukkan peningkatan bertahap dari Januari hingga puncaknya di Agustus, kemudian menurun hingga Desember.`
+            ];
+            
+            d3.select('#insights')
+                .selectAll('li')
+                .data(insights)
+                .enter()
+                .append('li')
+                .html(d => d);
+            
+            // Add interactivity with checkboxes
+            d3.select('#showCityHotel').on('change', function() {
+                const isChecked = d3.select(this).property('checked');
+                cityBars.style('display', isChecked ? 'block' : 'none');
+            });
+            
+            d3.select('#showResortHotel').on('change', function() {
+                const isChecked = d3.select(this).property('checked');
+                resortBars.style('display', isChecked ? 'block' : 'none');
+            });
+            
+            d3.select('#showTotalLine').on('change', function() {
+                const isChecked = d3.select(this).property('checked');
+                totalLine.style('display', isChecked ? 'block' : 'none');
+                circles.style('display', isChecked ? 'block' : 'none');
+                labels.style('display', isChecked ? 'block' : 'none');
+            });
+            
+            d3.select('#highlightPeaks').on('change', function() {
+                const isChecked = d3.select(this).property('checked');
+                maxHighlight.style('display', isChecked ? 'block' : 'none');
+                minHighlight.style('display', isChecked ? 'block' : 'none');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segmen Pasar Pemesanan Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Distribusi Pemesanan berdasarkan Segmen Pasar</h1>
+        
+        <div class="visualization">
+            <div class="chart-container" id="market-segment-chart"></div>
+            
+            <div class="insight-box">
+                <h3>Insight</h3>
+                <ul>
+                    <li>Segmen pasar Online Travel Agent (Online TA) mendominasi dengan lebih dari 50% dari total pemesanan.</li>
+                    <li>Pemesanan langsung (Direct) hanya menyumbang sekitar 15% dari total pemesanan.</li>
+                    <li>Pemesanan melalui Online TA sekitar 3-4 kali lebih banyak dibandingkan pemesanan langsung.</li>
+                    <li>City Hotel lebih dominan di hampir semua segmen pasar, terutama di segmen Online TA dan Corporate.</li>
+                    <li>Resort Hotel memiliki proporsi yang lebih tinggi di segmen Offline TA/TO dibandingkan segmen lainnya.</li>
+                    <li>Segmen Groups memiliki proporsi yang relatif kecil, menunjukkan bahwa sebagian besar pemesanan dilakukan secara individual.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="nav-container">
+            <a href="hotel_comparison.html"><button class="nav-button">Lihat Perbandingan Jenis Hotel</button></a>
+            <a href="index.html"><button class="nav-button">Kembali ke Beranda</button></a>
+        </div>
+    </div>
+
+    <footer>
+        <p>Visualisasi Data Hotel Booking Demand &copy; 2023</p>
+    </footer>
+
+    <script src="js/market_segment.js"></script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Segmen Pasar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <a href="index.html" class="btn btn-primary btn-back">&larr; Kembali ke Beranda</a>
+        
+        <header class="text-center mb-5">
+            <h1>Visualisasi Segmen Pasar</h1>
+            <p class="lead">Analisis distribusi pemesanan berdasarkan segmen pasar</p>
+        </header>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Visualisasi</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="hotelTypeFilter" class="form-label">Filter Jenis Hotel:</label>
+                                    <select id="hotelTypeFilter" class="form-select">
+                                        <option value="all">Semua Hotel</option>
+                                        <option value="City Hotel">City Hotel</option>
+                                        <option value="Resort Hotel">Resort Hotel</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="chartType" class="form-label">Jenis Visualisasi:</label>
+                                    <select id="chartType" class="form-select">
+                                        <option value="bar">Bar Chart</option>
+                                        <option value="pie">Pie Chart</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="visualization" class="visualization-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Insight</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-box">
+                            <h4>Temuan Utama</h4>
+                            <ul id="insights">
+                                <!-- Insights will be populated by JavaScript -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Penjelasan</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Visualisasi ini menunjukkan distribusi pemesanan hotel berdasarkan segmen pasar. Segmen pasar menunjukkan saluran atau cara tamu melakukan pemesanan hotel.</p>
+                        <p>Beberapa poin penting yang dapat diamati:</p>
+                        <ul>
+                            <li>Online Travel Agency (OTA) merupakan segmen pasar dominan dalam pemesanan hotel</li>
+                            <li>Segmen pasar yang berbeda memiliki preferensi yang berbeda terhadap jenis hotel</li>
+                            <li>Pemesanan langsung (Direct) memiliki proporsi yang relatif kecil dibandingkan dengan saluran lainnya</li>
+                            <li>Informasi ini dapat digunakan untuk strategi pemasaran dan distribusi hotel</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>Analisis Data Pemesanan Hotel &copy; 2023</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load data directly from CSV
+        d3.csv('data/hotel_bookings_processed.csv').then(rawData => {
+            // Initial filter and chart type
+            let currentHotelType = 'all';
+            let currentChartType = 'bar';
+            
+            // Process and visualize data
+            processDataAndVisualize();
+            
+            // Add event listeners for filters
+            d3.select('#hotelTypeFilter').on('change', function() {
+                currentHotelType = this.value;
+                processDataAndVisualize();
+            });
+            
+            d3.select('#chartType').on('change', function() {
+                currentChartType = this.value;
+                processDataAndVisualize();
+            });
+            
+            function processDataAndVisualize() {
+                // Filter data based on selected hotel type
+                let filteredData = rawData;
+                if (currentHotelType !== 'all') {
+                    filteredData = rawData.filter(d => d.hotel === currentHotelType);
+                }
+                
+                // Process the data to get counts by market segment
+                const marketSegmentCounts = d3.rollup(
+                    filteredData,
+                    v => v.length,
+                    d => d.market_segment
+                );
+                
+                // Convert to array format for easier manipulation
+                const data = Array.from(marketSegmentCounts, ([segment, count]) => ({
+                    segment: segment,
+                    count: count
+                }));
+                
+                // Calculate total and percentages
+                const total = d3.sum(data, d => d.count);
+                data.forEach(d => {
+                    d.percentage = (d.count / total * 100).toFixed(1);
+                });
+                
+                // Sort data by count (descending)
+                data.sort((a, b) => b.count - a.count);
+                
+                // Clear previous visualization
+                d3.select('#visualization').html('');
+                
+                // Create visualization based on selected chart type
+                if (currentChartType === 'bar') {
+                    createBarChart(data, total);
+                } else {
+                    createPieChart(data, total);
+                }
+                
+                // Update insights
+                updateInsights(data, total);
+            }
+            
+            function createBarChart(data, total) {
+                // Set up dimensions and margins
+                const margin = {top: 50, right: 30, bottom: 120, left: 80};
+                const width = 900 - margin.left - margin.right;
+                const height = 500 - margin.top - margin.bottom;
+                
+                // Create SVG
+                const svg = d3.select('#visualization')
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+                
+                // Set up scales
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.segment))
+                    .range([0, width])
+                    .padding(0.2);
+                
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.count) * 1.1])
+                    .range([height, 0]);
+                
+                // Set up color scale
+                const color = d3.scaleOrdinal()
+                    .domain(data.map(d => d.segment))
+                    .range(d3.schemeCategory10);
+                
+                // Create axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll('text')
+                    .style('text-anchor', 'end')
+                    .attr('dx', '-.8em')
+                    .attr('dy', '.15em')
+                    .attr('transform', 'rotate(-45)');
+                
+                svg.append('g')
+                    .call(d3.axisLeft(y).tickFormat(d => d3.format(',')(d)));
+                
+                // Add Y axis label
+                svg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -60)
+                    .attr('x', -height / 2)
+                    .attr('text-anchor', 'middle')
+                    .text('Jumlah Pemesanan');
+                
+                // Create tooltip
+                const tooltip = d3.select('body').append('div')
+                    .attr('class', 'tooltip')
+                    .style('opacity', 0);
+                
+                // Create bars
+                svg.selectAll('.bar')
+                    .data(data)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'bar')
+                    .attr('x', d => x(d.segment))
+                    .attr('width', x.bandwidth())
+                    .attr('y', d => y(d.count))
+                    .attr('height', d => height - y(d.count))
+                    .attr('fill', d => color(d.segment))
+                    .on('mouseover', function(event, d) {
+                        tooltip.transition()
+                            .duration(200)
+                            .style('opacity', .9);
+                        tooltip.html(`<strong>${d.segment}:</strong> ${d3.format(',')(d.count)} pemesanan<br>(${d.percentage}%)`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 28) + 'px');
+                        
+                        d3.select(this)
+                            .style('opacity', 0.8);
+                    })
+                    .on('mouseout', function() {
+                        tooltip.transition()
+                            .duration(500)
+                            .style('opacity', 0);
+                        
+                        d3.select(this)
+                            .style('opacity', 1);
+                    });
+                
+                // Add value labels on top of bars
+                svg.selectAll('.label')
+                    .data(data)
+                    .enter()
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('x', d => x(d.segment) + x.bandwidth() / 2)
+                    .attr('y', d => y(d.count) - 10)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '12px')
+                    .text(d => `${d.percentage}%`);
+                
+                // Add title
+                const titleText = currentHotelType === 'all' 
+                    ? 'Distribusi Pemesanan berdasarkan Segmen Pasar (Semua Hotel)'
+                    : `Distribusi Pemesanan berdasarkan Segmen Pasar (${currentHotelType})`;
+                
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', -20)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .text(titleText);
+                
+                // Add total count
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height + 70)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '14px')
+                    .text(`Total Pemesanan: ${d3.format(',')(total)}`);
+            }
+            
+            function createPieChart(data, total) {
+                // Set up dimensions
+                const width = 600;
+                const height = 500;
+                const radius = Math.min(width, height) / 2;
+                
+                // Create SVG
+                const svg = d3.select('#visualization')
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .append('g')
+                    .attr('transform', `translate(${width / 2}, ${height / 2})`);
+                
+                // Set up color scale
+                const color = d3.scaleOrdinal()
+                    .domain(data.map(d => d.segment))
+                    .range(d3.schemeCategory10);
+                
+                // Create pie generator
+                const pie = d3.pie()
+                    .value(d => d.count)
+                    .sort(null);
+                
+                // Create arc generator
+                const arc = d3.arc()
+                    .innerRadius(0)
+                    .outerRadius(radius * 0.8);
+                
+                // Create outer arc for labels
+                const outerArc = d3.arc()
+                    .innerRadius(radius * 0.9)
+                    .outerRadius(radius * 0.9);
+                
+                // Create tooltip
+                const tooltip = d3.select('body').append('div')
+                    .attr('class', 'tooltip')
+                    .style('opacity', 0);
+                
+                // Create pie slices
+                const slices = svg.selectAll('path')
+                    .data(pie(data))
+                    .enter()
+                    .append('path')
+                    .attr('d', arc)
+                    .attr('fill', d => color(d.data.segment))
+                    .attr('stroke', 'white')
+                    .style('stroke-width', '2px')
+                    .style('opacity', 1)
+                    .on('mouseover', function(event, d) {
+                        tooltip.transition()
+                            .duration(200)
+                            .style('opacity', .9);
+                        tooltip.html(`<strong>${d.data.segment}:</strong> ${d.data.percentage}%<br>${d3.format(',')(d.data.count)} pemesanan`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 28) + 'px');
+                        
+                        d3.select(this)
+                            .style('opacity', 0.8)
+                            .style('stroke-width', '3px');
+                    })
+                    .on('mouseout', function() {
+                        tooltip.transition()
+                            .duration(500)
+                            .style('opacity', 0);
+                        
+                        d3.select(this)
+                            .style('opacity', 1)
+                            .style('stroke-width', '2px');
+                    });
+                
+                // Add labels
+                const labels = svg.selectAll('text')
+                    .data(pie(data))
+                    .enter()
+                    .append('text')
+                    .attr('transform', d => {
+                        const pos = outerArc.centroid(d);
+                        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                        pos[0] = radius * 0.95 * (midAngle < Math.PI ? 1 : -1);
+                        return `translate(${pos})`;
+                    })
+                    .style('text-anchor', d => {
+                        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                        return midAngle < Math.PI ? 'start' : 'end';
+                    })
+                    .style('font-size', '12px')
+                    .text(d => `${d.data.segment} (${d.data.percentage}%)`);
+                
+                // Add polylines between slices and labels
+                svg.selectAll('polyline')
+                    .data(pie(data))
+                    .enter()
+                    .append('polyline')
+                    .attr('points', d => {
+                        const pos = outerArc.centroid(d);
+                        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                        pos[0] = radius * 0.95 * (midAngle < Math.PI ? 1 : -1);
+                        return [arc.centroid(d), outerArc.centroid(d), pos];
+                    })
+                    .style('fill', 'none')
+                    .style('stroke', 'black')
+                    .style('stroke-width', '1px');
+                
+                // Add title
+                const titleText = currentHotelType === 'all' 
+                    ? 'Distribusi Pemesanan berdasarkan Segmen Pasar (Semua Hotel)'
+                    : `Distribusi Pemesanan berdasarkan Segmen Pasar (${currentHotelType})`;
+                
+                svg.append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('y', -height/2 + 20)
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .text(titleText);
+                
+                // Add total count
+                svg.append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('y', height/2 - 20)
+                    .style('font-size', '14px')
+                    .text(`Total Pemesanan: ${d3.format(',')(total)}`);
+            }
+            
+            function updateInsights(data, total) {
+                // Generate insights based on the data
+                const topSegment = data[0];
+                const secondSegment = data[1];
+                const bottomSegment = data[data.length - 1];
+                
+                const hotelTypeText = currentHotelType === 'all' 
+                    ? 'semua jenis hotel' 
+                    : `${currentHotelType}`;
+                
+                const insights = [
+                    `Segmen pasar ${topSegment.segment} mendominasi pemesanan untuk ${hotelTypeText} dengan ${topSegment.percentage}% dari total pemesanan.`,
+                    `${secondSegment.segment} berada di posisi kedua dengan ${secondSegment.percentage}% dari total pemesanan.`,
+                    `${bottomSegment.segment} memiliki kontribusi terkecil dengan hanya ${bottomSegment.percentage}% dari total pemesanan.`,
+                    `Terdapat ${data.length} segmen pasar berbeda yang berkontribusi pada pemesanan hotel.`,
+                    `Total pemesanan untuk ${hotelTypeText} adalah ${d3.format(',')(total)} pemesanan.`,
+                    `Rasio antara segmen pasar tertinggi dan terendah adalah ${(topSegment.count / bottomSegment.count).toFixed(1)}:1.`
+                ];
+                
+                // Add additional insight for specific hotel types
+                if (currentHotelType !== 'all') {
+                    // Get data for the other hotel type for comparison
+                    const otherHotelType = currentHotelType === 'City Hotel' ? 'Resort Hotel' : 'City Hotel';
+                    const otherHotelData = rawData.filter(d => d.hotel === otherHotelType);
+                    
+                    const otherMarketSegmentCounts = d3.rollup(
+                        otherHotelData,
+                        v => v.length,
+                        d => d.market_segment
+                    );
+                    
+                    const otherTopSegment = Array.from(otherMarketSegmentCounts, ([segment, count]) => ({
+                        segment: segment,
+                        count: count
+                    })).sort((a, b) => b.count - a.count)[0];
+                    
+                    if (otherTopSegment && topSegment.segment !== otherTopSegment.segment) {
+                        insights.push(`Segmen pasar dominan untuk ${currentHotelType} (${topSegment.segment}) berbeda dengan segmen pasar dominan untuk ${otherHotelType} (${otherTopSegment.segment}).`);
+                    } else if (otherTopSegment) {
+                        insights.push(`Segmen pasar dominan untuk kedua jenis hotel adalah sama: ${topSegment.segment}.`);
+                    }
+                }
+                
+                // Update the insights list
+                d3.select('#insights')
+                    .html('')
+                    .selectAll('li')
+                    .data(insights)
+                    .enter()
+                    .append('li')
+                    .html(d => d);
+            }
+        });
+    </script>
+</body>
+</html>
